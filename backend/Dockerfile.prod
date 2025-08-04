@@ -70,7 +70,10 @@ HEALTHCHECK --interval=30s --timeout=30s --start-period=5s --retries=3 \
     CMD curl -f http://localhost:8000/api/health/ || exit 1
 
 # Create startup script
-RUN echo '#!/bin/bash\npython manage.py collectstatic --noinput\nexec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile - --error-logfile - core.wsgi:application' > /app/start.sh && chmod +x /app/start.sh
+RUN echo '#!/bin/bash' > /app/start.sh && \
+    echo 'python manage.py collectstatic --noinput' >> /app/start.sh && \
+    echo 'exec gunicorn --bind 0.0.0.0:8000 --workers 3 --timeout 120 --access-logfile - --error-logfile - core.wsgi:application' >> /app/start.sh && \
+    chmod +x /app/start.sh
 
 # Run startup script
 CMD ["/app/start.sh"]

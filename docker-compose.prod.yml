@@ -13,7 +13,6 @@ services:
       - nginx_logs:/var/log/nginx
     depends_on:
       - backend
-      - frontend
     restart: unless-stopped
     networks:
       - safesphere_network
@@ -43,7 +42,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    command: celery -A core worker --loglevel=info
+    command: ["/opt/venv/bin/celery", "-A", "core", "worker", "--loglevel=info"]
     volumes:
       - backend_media:/app/media
       - backend_logs:/app/logs
@@ -60,7 +59,7 @@ services:
     build:
       context: ./backend
       dockerfile: Dockerfile.prod
-    command: celery -A core beat --loglevel=info
+    command: ["/opt/venv/bin/celery", "-A", "core", "beat", "--loglevel=info"]
     volumes:
       - backend_logs:/app/logs
     env_file:
@@ -92,7 +91,6 @@ volumes:
   backend_static:
   backend_media:
   backend_logs:
-  frontend_static:
   nginx_logs:
 
 networks:
