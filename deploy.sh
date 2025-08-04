@@ -52,7 +52,12 @@ check_env() {
 # Function to backup database
 backup_database() {
     print_status "Creating database backup..."
-    docker-compose -f $COMPOSE_FILE exec -T db pg_dump -U $DB_USER $DB_NAME > $BACKUP_DIR/backup_$(date +%Y%m%d_%H%M%S).sql
+
+    # Get database credentials from environment
+    source .env.prod
+
+    # Create backup using pg_dump with external database
+    pg_dump "postgresql://$DB_USER:$DB_PASSWORD@$DB_HOST:$DB_PORT/$DB_NAME" > $BACKUP_DIR/backup_$(date +%Y%m%d_%H%M%S).sql
     print_status "Backup completed successfully"
 }
 

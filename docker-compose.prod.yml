@@ -18,16 +18,8 @@ services:
     networks:
       - safesphere_network
 
-  # Frontend
-  frontend:
-    build:
-      context: ./frontend
-      dockerfile: Dockerfile.prod
-    volumes:
-      - frontend_static:/usr/share/nginx/html
-    restart: unless-stopped
-    networks:
-      - safesphere_network
+  # Frontend (removed - hosting on Vercel)
+  # The frontend will be hosted separately on Vercel
 
   # Backend
   backend:
@@ -41,7 +33,6 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
       - redis
     restart: unless-stopped
     networks:
@@ -59,7 +50,6 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
       - redis
     restart: unless-stopped
     networks:
@@ -76,27 +66,13 @@ services:
     env_file:
       - .env.prod
     depends_on:
-      - db
       - redis
     restart: unless-stopped
     networks:
       - safesphere_network
 
-  # Database
-  db:
-    image: postgres:15-alpine
-    volumes:
-      - postgres_data:/var/lib/postgresql/data
-      - ./backups:/backups
-    env_file:
-      - .env.prod
-    environment:
-      - POSTGRES_DB=${DB_NAME}
-      - POSTGRES_USER=${DB_USER}
-      - POSTGRES_PASSWORD=${DB_PASSWORD}
-    restart: unless-stopped
-    networks:
-      - safesphere_network
+  # Database (External Render PostgreSQL - no local database needed)
+  # The backend will connect directly to Render PostgreSQL
 
   # Redis
   redis:
@@ -108,30 +84,10 @@ services:
     networks:
       - safesphere_network
 
-  # Backup service
-  backup:
-    image: postgres:15-alpine
-    volumes:
-      - ./backups:/backups
-      - postgres_data:/var/lib/postgresql/data
-    env_file:
-      - .env.prod
-    command: |
-      sh -c '
-        while true; do
-          pg_dump -h db -U $${DB_USER} -d $${DB_NAME} > /backups/backup_$$(date +%Y%m%d_%H%M%S).sql
-          find /backups -name "backup_*.sql" -mtime +7 -delete
-          sleep 86400
-        done
-      '
-    depends_on:
-      - db
-    restart: unless-stopped
-    networks:
-      - safesphere_network
+  # Backup service (removed - using external Render PostgreSQL)
+  # Manual backups can be done using: ./deploy.sh backup
 
 volumes:
-  postgres_data:
   redis_data:
   backend_static:
   backend_media:
